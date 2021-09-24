@@ -38,11 +38,17 @@ import { StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from 'styled-components';
+import { useNavigation } from '@react-navigation/native';
 
 interface Props {}
 
 const SchedulingDetails = (props: Props) => {
   const theme = useTheme();
+  const navigation = useNavigation<any>();
+
+  const handleConfirmRental = () => {
+    navigation.navigate('SchedulingComplete');
+  };
 
   return (
     <Container>
@@ -122,10 +128,9 @@ const SchedulingDetails = (props: Props) => {
 
       <Footer>
         <Button
-          title="Confirmar"
-          onPress={function (): void {
-            throw new Error('Function not implemented.');
-          }}
+          title="Alugar agora"
+          onPress={handleConfirmRental}
+          color={theme.colors.success}
         />
       </Footer>
     </Container>

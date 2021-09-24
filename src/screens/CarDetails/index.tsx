@@ -26,10 +26,17 @@ import exchangeSvg from '../../assets/exchange.svg';
 import peopleSvg from '../../assets/people.svg';
 import Button from '../../components/Button';
 import { StatusBar } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 interface Props {}
 
 const CarDetails = (props: Props) => {
+  const navigation = useNavigation<any>();
+
+  const handleConfirmRental = () => {
+    navigation.navigate('Scheduling');
+  };
+
   return (
     <Container>
       <Header>
@@ -83,10 +90,8 @@ const CarDetails = (props: Props) => {
 
       <Footer>
         <Button
-          title="Confirmar"
-          onPress={function (): void {
-            throw new Error('Function not implemented.');
-          }}
+          title="Escolher período do aluguel"
+          onPress={handleConfirmRental}
         />
       </Footer>
     </Container>

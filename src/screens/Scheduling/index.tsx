@@ -16,11 +16,18 @@ import ArrowSvg from '../../assets/arrow.svg';
 import { StatusBar } from 'react-native';
 import Button from '../../components/Button';
 import Calendar from '../../components/Calendar';
+import { useNavigation } from '@react-navigation/native';
 
 interface Props {}
 
 const Scheduling = (props: Props) => {
   const theme = useTheme();
+  const navigation = useNavigation<any>();
+
+  const handleConfirmRental = () => {
+    navigation.navigate('SchedulingDetails');
+  };
+
   return (
     <Container>
       <StatusBar
@@ -55,12 +62,7 @@ const Scheduling = (props: Props) => {
       </Content>
 
       <Footer>
-        <Button
-          title="Confirmar"
-          onPress={function (): void {
-            throw new Error('Function not implemented.');
-          }}
-        />
+        <Button title="Confirmar" onPress={handleConfirmRental} />
       </Footer>
     </Container>
   );
