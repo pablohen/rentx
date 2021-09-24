@@ -18,23 +18,29 @@ import {
   Accessories,
   Footer,
 } from './styles';
-import speedSvg from '../../assets/speed.svg';
-import accelerationSvg from '../../assets/acceleration.svg';
-import forceSvg from '../../assets/force.svg';
-import gasolineSvg from '../../assets/gasoline.svg';
-import exchangeSvg from '../../assets/exchange.svg';
-import peopleSvg from '../../assets/people.svg';
 import Button from '../../components/Button';
 import { StatusBar } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { CarDTO } from './../../dtos/CarDTO';
+import getAccessoryIcon from './../../utils/getAccessoryIcon';
+
+interface Params {
+  car: CarDTO;
+}
 
 interface Props {}
 
 const CarDetails = (props: Props) => {
   const navigation = useNavigation<any>();
+  const route = useRoute();
+  const { car } = route.params as Params;
 
   const handleConfirmRental = () => {
     navigation.navigate('Scheduling');
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
   };
 
   return (
@@ -45,47 +51,37 @@ const CarDetails = (props: Props) => {
           translucent
           backgroundColor="transparent"
         />
-        <BackButton onPress={() => {}} />
+        <BackButton onPress={handleBack} />
       </Header>
 
       <CarImages>
-        <ImageSlider
-          imagesUrl={[
-            'https://freepngimg.com/thumb/audi/35227-5-audi-rs5-red.png',
-          ]}
-        />
+        <ImageSlider imagesUrl={car.photos} />
       </CarImages>
 
       <Content>
         <Details>
           <Description>
-            <Brand>Lambo</Brand>
-            <Name>Huracan</Name>
+            <Brand>{car.brand}</Brand>
+            <Name>{car.name}</Name>
           </Description>
 
           <Rent>
-            <Period>Ao dia</Period>
-            <Price>R$ 120,00</Price>
+            <Period>{car.rent.period}</Period>
+            <Price>{`R$ ${car.rent.price}`}</Price>
           </Rent>
         </Details>
 
         <Accessories>
-          <Accessory name="380Km/h" icon={speedSvg} />
-          <Accessory name="3.2s" icon={accelerationSvg} />
-          <Accessory name="800HP" icon={forceSvg} />
-          <Accessory name="Gasoline" icon={gasolineSvg} />
-          <Accessory name="auto" icon={exchangeSvg} />
-          <Accessory name="2 pessoas" icon={peopleSvg} />
+          {car.accessories.map((accessory) => (
+            <Accessory
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+            />
+          ))}
         </Accessories>
 
-        <About>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut quis ex
-          libero. Sed luctus ligula vitae nibh fermentum, eget mattis ligula
-          sodales. Cras ac dui lectus. Pellentesque vitae massa eu enim semper
-          interdum. Vivamus a venenatis risus. Aliquam porta risus sed urna
-          aliquet, sed sollicitudin dolor accumsan. Aenean mollis sodales
-          cursus. Nunc pulvinar lectus vel eleifend aliquet.
-        </About>
+        <About>{car.about}</About>
       </Content>
 
       <Footer>
