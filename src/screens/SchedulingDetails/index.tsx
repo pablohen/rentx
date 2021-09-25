@@ -38,16 +38,29 @@ import { StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from 'styled-components';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { CarDTO } from '../../dtos/CarDTO';
+import getAccessoryIcon from '../../utils/getAccessoryIcon';
+
+interface Params {
+  car: CarDTO;
+  dates: any;
+}
 
 interface Props {}
 
 const SchedulingDetails = (props: Props) => {
   const theme = useTheme();
   const navigation = useNavigation<any>();
+  const route = useRoute();
+  const { car, dates } = route.params as Params;
 
   const handleConfirmRental = () => {
     navigation.navigate('SchedulingComplete');
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
   };
 
   return (
@@ -58,38 +71,43 @@ const SchedulingDetails = (props: Props) => {
           translucent
           backgroundColor="transparent"
         />
-        <BackButton onPress={() => {}} />
+        <BackButton onPress={handleBack} />
       </Header>
 
       <CarImages>
-        <ImageSlider
-          imagesUrl={[
-            'https://freepngimg.com/thumb/audi/35227-5-audi-rs5-red.png',
-          ]}
-        />
+        <ImageSlider imagesUrl={car.photos} />
       </CarImages>
 
       <Content>
         <Details>
           <Description>
-            <Brand>Lambo</Brand>
-            <Name>Huracan</Name>
+            <Brand>{car.brand}</Brand>
+            <Name>{car.name}</Name>
           </Description>
 
           <Rent>
-            <Period>Ao dia</Period>
-            <Price>R$ 120,00</Price>
+            <Period>{car.rent.period}</Period>
+            <Price>R$ {car.rent.price}</Price>
           </Rent>
         </Details>
 
         <Accessories>
+          {car.accessories.map((accessory) => (
+            <Accessory
+              key={accessory.type}
+              name={accessory.name}
+              icon={getAccessoryIcon(accessory.type)}
+            />
+          ))}
+        </Accessories>
+        {/* <Accessories>
           <Accessory name="380Km/h" icon={speedSvg} />
           <Accessory name="3.2s" icon={accelerationSvg} />
           <Accessory name="800HP" icon={forceSvg} />
           <Accessory name="Gasoline" icon={gasolineSvg} />
           <Accessory name="auto" icon={exchangeSvg} />
           <Accessory name="2 pessoas" icon={peopleSvg} />
-        </Accessories>
+        </Accessories> */}
 
         <RentalPeriod>
           <CalendarIcon>

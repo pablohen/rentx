@@ -36,7 +36,7 @@ const CarDetails = (props: Props) => {
   const { car } = route.params as Params;
 
   const handleConfirmRental = () => {
-    navigation.navigate('Scheduling');
+    navigation.navigate('Scheduling', { car });
   };
 
   const handleBack = () => {
