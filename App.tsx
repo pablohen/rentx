@@ -17,7 +17,7 @@ import Routes from './src/routes';
 interface Props {}
 
 const App = (props: Props) => {
-  const fontsLoaded = useFonts({
+  const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Archivo_400Regular,
