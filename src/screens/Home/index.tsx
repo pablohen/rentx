@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { CarList, Container, Header, HeaderContent, TotalCars } from './styles';
+import {
+  CarList,
+  Container,
+  Header,
+  HeaderContent,
+  MyCarsButton,
+  TotalCars,
+} from './styles';
 import Logo from '../../assets/logo.svg';
 import { RFValue } from 'react-native-responsive-fontsize';
 import Car from '../../components/Car';
@@ -8,6 +15,8 @@ import { useNavigation } from '@react-navigation/native';
 import api from './../../services/api';
 import { CarDTO } from './../../dtos/CarDTO';
 import Load from './../../components/Load/index';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from 'styled-components';
 
 interface Props {}
 
@@ -16,10 +25,16 @@ const Home = (props: Props) => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<any>();
 
+  const theme = useTheme();
+
   const handleCarDetails = (car: CarDTO) => {
     navigation.navigate('CarDetails', {
       car,
     });
+  };
+
+  const handleOpenMyCars = () => {
+    navigation.navigate('MyCars');
   };
 
   const fetchCars = async () => {
@@ -51,6 +66,10 @@ const Home = (props: Props) => {
           <TotalCars>Total de {cars.length} carros</TotalCars>
         </HeaderContent>
       </Header>
+
+      <MyCarsButton onPress={handleOpenMyCars}>
+        <Ionicons name="car" size={32} color={theme.colors.shape} />
+      </MyCarsButton>
 
       {loading ? (
         <Load />

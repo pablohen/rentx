@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Accessory from '../../components/Accessory';
 import BackButton from '../../components/BackButton';
 import ImageSlider from '../../components/ImageSlider';
@@ -27,24 +27,26 @@ import {
   RentalPriceQuota,
   RentalPriceTotal,
 } from './styles';
-import speedSvg from '../../assets/speed.svg';
-import accelerationSvg from '../../assets/acceleration.svg';
-import forceSvg from '../../assets/force.svg';
-import gasolineSvg from '../../assets/gasoline.svg';
-import exchangeSvg from '../../assets/exchange.svg';
-import peopleSvg from '../../assets/people.svg';
 import Button from '../../components/Button';
-import { StatusBar } from 'react-native';
+import { Alert, StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from 'styled-components';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { CarDTO } from '../../dtos/CarDTO';
 import getAccessoryIcon from '../../utils/getAccessoryIcon';
+import { format } from 'date-fns';
+import getPlatformDate from './../../utils/getPlatformDate';
+import api from '../../services/api';
 
 interface Params {
   car: CarDTO;
-  dates: any;
+  dates: string[];
+}
+
+interface RentalPeriod {
+  start: string;
+  end: string;
 }
 
 interface Props {}
@@ -54,14 +56,52 @@ const SchedulingDetails = (props: Props) => {
   const navigation = useNavigation<any>();
   const route = useRoute();
   const { car, dates } = route.params as Params;
+  const [loading, setLoading] = useState(false);
 
-  const handleConfirmRental = () => {
-    navigation.navigate('SchedulingComplete');
+  const rentTotal = Number(dates.length * car.rent.price);
+
+  const [rentalPeriod, setRentalPeriod] = useState<RentalPeriod>(
+    {} as RentalPeriod
+  );
+
+  const handleConfirmRental = async () => {
+    setLoading(true);
+    const schedulesByCar = await api.get(`/schedules_bycars/${car.id}`);
+
+    const unavailable_dates = [...schedulesByCar.data.unavailable_dates, dates];
+
+    await api.post('/schedules_byuser', {
+      user_id: 1,
+      car,
+      startDate: rentalPeriod.start,
+      endDate: rentalPeriod.end,
+    });
+
+    api
+      .put(`/schedules_bycars/${car.id}`, {
+        id: car.id,
+        unavailable_dates,
+      })
+      .then(() => navigation.navigate('SchedulingComplete'))
+      .catch(() => {
+        Alert.alert('Não foi possível confirmar o agendamento');
+        setLoading(false);
+      });
   };
 
   const handleBack = () => {
     navigation.goBack();
   };
+
+  useEffect(() => {
+    setRentalPeriod({
+      start: format(getPlatformDate(new Date(dates[0])), 'dd/MM/yyyy'),
+      end: format(
+        getPlatformDate(new Date(dates[dates.length - 1])),
+        'dd/MM/yyyy'
+      ),
+    });
+  }, []);
 
   return (
     <Container>
@@ -87,7 +127,7 @@ const SchedulingDetails = (props: Props) => {
 
           <Rent>
             <Period>{car.rent.period}</Period>
-            <Price>R$ {car.rent.price}</Price>
+            <Price>R$ {car.rent.price},00</Price>
           </Rent>
         </Details>
 
@@ -100,14 +140,6 @@ const SchedulingDetails = (props: Props) => {
             />
           ))}
         </Accessories>
-        {/* <Accessories>
-          <Accessory name="380Km/h" icon={speedSvg} />
-          <Accessory name="3.2s" icon={accelerationSvg} />
-          <Accessory name="800HP" icon={forceSvg} />
-          <Accessory name="Gasoline" icon={gasolineSvg} />
-          <Accessory name="auto" icon={exchangeSvg} />
-          <Accessory name="2 pessoas" icon={peopleSvg} />
-        </Accessories> */}
 
         <RentalPeriod>
           <CalendarIcon>
@@ -120,7 +152,7 @@ const SchedulingDetails = (props: Props) => {
 
           <DateInfo>
             <DateTitle>DE</DateTitle>
-            <DateValue>21/09/2021</DateValue>
+            <DateValue>{rentalPeriod.start}</DateValue>
           </DateInfo>
 
           <Feather
@@ -131,15 +163,17 @@ const SchedulingDetails = (props: Props) => {
 
           <DateInfo>
             <DateTitle>ATÉ</DateTitle>
-            <DateValue>21/09/2021</DateValue>
+            <DateValue>{rentalPeriod.end}</DateValue>
           </DateInfo>
         </RentalPeriod>
 
         <RentalPrice>
           <RentalPriceLabel>TOTAL</RentalPriceLabel>
           <RentalPriceDetails>
-            <RentalPriceQuota>R$ 580,00 x3 diárias</RentalPriceQuota>
-            <RentalPriceTotal>R$ 2900,00</RentalPriceTotal>
+            <RentalPriceQuota>
+              R$ {car.rent.price},00 x{dates.length} diárias
+            </RentalPriceQuota>
+            <RentalPriceTotal>R$ {rentTotal},00</RentalPriceTotal>
           </RentalPriceDetails>
         </RentalPrice>
       </Content>
@@ -149,6 +183,8 @@ const SchedulingDetails = (props: Props) => {
           title="Alugar agora"
           onPress={handleConfirmRental}
           color={theme.colors.success}
+          enabled={!loading}
+          loading={loading}
         />
       </Footer>
     </Container>
