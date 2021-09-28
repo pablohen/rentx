@@ -22,7 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import BackButton from '../../components/BackButton';
 import Car from '../../components/Car';
 import { AntDesign } from '@expo/vector-icons';
-import Load from '../../components/Load';
+import LoadAnimated from '../../components/LoadAnimated';
 
 interface CarProps {
   id: string;
@@ -75,7 +75,7 @@ const MyCars = (props: Props) => {
       </Header>
 
       {loading ? (
-        <Load />
+        <LoadAnimated />
       ) : (
         <Content>
           <Appointments>

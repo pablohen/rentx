@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import {
-  CarList,
-  Container,
-  Header,
-  HeaderContent,
-  MyCarsButton,
-  TotalCars,
-} from './styles';
+import { CarList, Container, Header, HeaderContent, TotalCars } from './styles';
 import Logo from '../../assets/logo.svg';
 import { RFValue } from 'react-native-responsive-fontsize';
 import Car from '../../components/Car';
-import { Alert, StatusBar } from 'react-native';
+import { Alert, BackHandler, StatusBar, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import api from './../../services/api';
 import { CarDTO } from './../../dtos/CarDTO';
 import Load from './../../components/Load/index';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from 'styled-components';
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import { PanGestureHandler, RectButton } from 'react-native-gesture-handler';
+import LoadAnimated from '../../components/LoadAnimated';
+
+const ButtonAnimated = Animated.createAnimatedComponent(RectButton);
 
 interface Props {}
 
@@ -24,6 +27,33 @@ const Home = (props: Props) => {
   const [cars, setCars] = useState<CarDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<any>();
+
+  const positionY = useSharedValue(0);
+  const positionX = useSharedValue(0);
+
+  const myCarsButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: positionX.value },
+        { translateY: positionY.value },
+      ],
+    };
+  });
+
+  const onGestureEvent = useAnimatedGestureHandler({
+    onStart(_, ctx: any) {
+      ctx.positionX = positionX.value;
+      ctx.positionY = positionY.value;
+    },
+    onActive(e, ctx: any) {
+      positionX.value = ctx.positionX + e.translationX;
+      positionY.value = ctx.positionY + e.translationY;
+    },
+    onEnd() {
+      positionX.value = withSpring(0);
+      positionY.value = withSpring(0);
+    },
+  });
 
   const theme = useTheme();
 
@@ -53,6 +83,10 @@ const Home = (props: Props) => {
     fetchCars();
   }, []);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', () => true);
+  }, []);
+
   return (
     <Container>
       <StatusBar
@@ -63,16 +97,12 @@ const Home = (props: Props) => {
       <Header>
         <HeaderContent>
           <Logo width={RFValue(108)} height={RFValue(12)} />
-          <TotalCars>Total de {cars.length} carros</TotalCars>
+          {!loading && <TotalCars>Total de {cars.length} carros</TotalCars>}
         </HeaderContent>
       </Header>
 
-      <MyCarsButton onPress={handleOpenMyCars}>
-        <Ionicons name="car" size={32} color={theme.colors.shape} />
-      </MyCarsButton>
-
       {loading ? (
-        <Load />
+        <LoadAnimated />
       ) : (
         <CarList
           data={cars}
@@ -82,8 +112,43 @@ const Home = (props: Props) => {
           )}
         />
       )}
+
+      <PanGestureHandler onGestureEvent={onGestureEvent}>
+        <Animated.View
+          style={[
+            myCarsButtonStyle,
+            {
+              position: 'absolute',
+              bottom: 13,
+              right: 22,
+            },
+          ]}
+        >
+          <ButtonAnimated
+            onPress={handleOpenMyCars}
+            style={[
+              styles.button,
+              {
+                backgroundColor: theme.colors.main,
+              },
+            ]}
+          >
+            <Ionicons name="car" size={32} color={theme.colors.shape} />
+          </ButtonAnimated>
+        </Animated.View>
+      </PanGestureHandler>
     </Container>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default Home;
