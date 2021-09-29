@@ -7,11 +7,24 @@ import { BorderlessButton } from 'react-native-gesture-handler';
 
 interface Props extends TextInputProps {
   iconName: React.ComponentProps<typeof Feather>['name'];
+  value?: string;
 }
 
-const PasswordInput = ({ iconName, ...rest }: Props) => {
+const PasswordInput = ({ iconName, value, ...rest }: Props) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [isFilled, setIsFilled] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
   const theme = useTheme();
-  const [isPasswordVisible, setIsPasswordVisible] = useState(true);
+
+  const handleInputFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleInputBlur = () => {
+    setIsFocused(false);
+    setIsFilled(!!value);
+  };
 
   const handlePasswordVivibilityChange = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -19,14 +32,26 @@ const PasswordInput = ({ iconName, ...rest }: Props) => {
 
   return (
     <Container>
-      <IconContainer>
-        <Feather name={iconName} size={24} color={theme.colors.text_detail} />
+      <IconContainer isFocused={isFocused}>
+        <Feather
+          name={iconName}
+          size={24}
+          color={
+            isFocused || isFilled ? theme.colors.main : theme.colors.text_detail
+          }
+        />
       </IconContainer>
 
-      <InputText {...rest} secureTextEntry={isPasswordVisible} />
+      <InputText
+        {...rest}
+        secureTextEntry={!isPasswordVisible}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        isFocused={isFocused}
+      />
 
       <BorderlessButton onPress={handlePasswordVivibilityChange}>
-        <IconContainer>
+        <IconContainer isFocused={isFocused}>
           <Feather
             name={isPasswordVisible ? 'eye' : 'eye-off'}
             size={24}
