@@ -58,7 +58,7 @@ const SchedulingDetails = (props: Props) => {
   const { car, dates } = route.params as Params;
   const [loading, setLoading] = useState(false);
 
-  const rentTotal = Number(dates.length * car.rent.price);
+  const rentTotal = Number(dates.length * car.price);
 
   const [rentalPeriod, setRentalPeriod] = useState<RentalPeriod>(
     {} as RentalPeriod
@@ -132,8 +132,8 @@ const SchedulingDetails = (props: Props) => {
           </Description>
 
           <Rent>
-            <Period>{car.rent.period}</Period>
-            <Price>R$ {car.rent.price},00</Price>
+            <Period>{car.period}</Period>
+            <Price>R$ {car.price},00</Price>
           </Rent>
         </Details>
 
@@ -177,7 +177,7 @@ const SchedulingDetails = (props: Props) => {
           <RentalPriceLabel>TOTAL</RentalPriceLabel>
           <RentalPriceDetails>
             <RentalPriceQuota>
-              R$ {car.rent.price},00 x{dates.length} diárias
+              R$ {car.price},00 x{dates.length} diárias
             </RentalPriceQuota>
             <RentalPriceTotal>R$ {rentTotal},00</RentalPriceTotal>
           </RentalPriceDetails>

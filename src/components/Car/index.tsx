@@ -11,7 +11,6 @@ import {
   Type,
   CarImage,
 } from './styles';
-import GasolineSVg from '../../assets/gasoline.svg';
 import { RectButtonProps } from 'react-native-gesture-handler';
 import { CarDTO } from './../../dtos/CarDTO';
 import getAccessoryIcon from './../../utils/getAccessoryIcon';
@@ -32,8 +31,8 @@ const Car = ({ data, onPress, ...rest }: Props) => {
 
         <About>
           <Rent>
-            <Period>{data.rent.period}</Period>
-            <Price>{`R$ ${data.rent.price}`}</Price>
+            <Period>{data.period}</Period>
+            <Price>{`R$ ${data.price}`}</Price>
           </Rent>
 
           <Type>

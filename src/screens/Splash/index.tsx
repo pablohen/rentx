@@ -57,7 +57,7 @@ const Splash = (props: Props) => {
   });
 
   const startApp = () => {
-    navigation.navigate('Home');
+    navigation.navigate('SignIn');
   };
 
   useEffect(() => {

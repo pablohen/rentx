@@ -16,6 +16,7 @@ import PasswordInput from '../../components/PasswordInput';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import * as yup from 'yup';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../hooks/auth';
 
 interface Props {}
 
@@ -25,6 +26,8 @@ const SignIn = (props: Props) => {
 
   const theme = useTheme();
   const navigation = useNavigation<any>();
+
+  const { signIn } = useAuth();
 
   const handleSignIn = async () => {
     try {
@@ -37,7 +40,8 @@ const SignIn = (props: Props) => {
       });
 
       await schema.validate({ email, password });
-      Alert.alert('Tudo certo!', 'asdhasjkhdjksahdjkshad');
+      Alert.alert('Tudo certo!', '+/-');
+      signIn({ email, password });
     } catch (error) {
       console.error(error);
       if (error instanceof yup.ValidationError) {

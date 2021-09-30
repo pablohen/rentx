@@ -16,6 +16,7 @@ import Button from '../../../components/Button';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import PasswordInput from '../../../components/PasswordInput';
 import { useTheme } from 'styled-components';
+import api from './../../../services/api';
 
 interface Params {
   user: {
@@ -40,7 +41,7 @@ const SignUpSecondStep = (props: Props) => {
     navigation.goBack();
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!password || !passwordConfirm) {
       return Alert.alert('Senha em branco', 'Digite uma senha e confirme.');
     }
@@ -52,11 +53,24 @@ const SignUpSecondStep = (props: Props) => {
       );
     }
 
-    navigation.navigate('Confirmation', {
-      title: 'Conta Criada!',
-      message: `Agora é só fazer login\ne aproveitar`,
-      nextScreenRoute: 'SignIn',
-    });
+    await api
+      .post('/users', {
+        name: user.name,
+        email: user.email,
+        driver_license: user.driverLicense,
+        password,
+      })
+      .then(() => {
+        navigation.navigate('Confirmation', {
+          title: 'Conta Criada!',
+          message: `Agora é só fazer login\ne aproveitar`,
+          nextScreenRoute: 'SignIn',
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        Alert.alert('Opa', 'Não foi possível cadastrar.');
+      });
   };
 
   return (
