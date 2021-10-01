@@ -8,12 +8,15 @@ import { useNavigation } from '@react-navigation/native';
 import api from './../../services/api';
 import { CarDTO } from './../../dtos/CarDTO';
 import LoadAnimated from '../../components/LoadAnimated';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 interface Props {}
 
 const Home = (props: Props) => {
   const [cars, setCars] = useState<CarDTO[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const netInfo = useNetInfo();
   const navigation = useNavigation<any>();
 
   const handleCarDetails = (car: CarDTO) => {
@@ -22,21 +25,35 @@ const Home = (props: Props) => {
     });
   };
 
-  const fetchCars = async () => {
-    try {
-      const res = await api.get('/cars');
-      setCars(res.data);
-    } catch (error) {
-      Alert.alert('Erro ao carregar os carros');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCars = async () => {
+      try {
+        const res = await api.get('/cars');
+        isMounted && setCars(res.data);
+      } catch (error) {
+        Alert.alert('Erro ao carregar os carros');
+        console.error(error);
+      } finally {
+        isMounted && setLoading(false);
+      }
+    };
+
+    fetchCars();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
-    fetchCars();
-  }, []);
+    if (netInfo.isConnected) {
+      Alert.alert('Online');
+    } else {
+      Alert.alert('Offline');
+    }
+  }, [netInfo.isConnected]);
 
   return (
     <Container>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Keyboard, KeyboardAvoidingView, StatusBar } from 'react-native';
 import Button from '../../components/Button';
 import {
@@ -17,6 +17,7 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import * as yup from 'yup';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../hooks/auth';
+import database from './../../database';
 
 interface Props {}
 
@@ -40,7 +41,6 @@ const SignIn = (props: Props) => {
       });
 
       await schema.validate({ email, password });
-      Alert.alert('Tudo certo!', '+/-');
       signIn({ email, password });
     } catch (error) {
       console.error(error);
