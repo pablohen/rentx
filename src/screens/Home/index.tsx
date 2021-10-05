@@ -9,19 +9,42 @@ import api from './../../services/api';
 import { CarDTO } from './../../dtos/CarDTO';
 import LoadAnimated from '../../components/LoadAnimated';
 import { useNetInfo } from '@react-native-community/netinfo';
+import { synchronize } from '@nozbe/watermelondb/sync';
+import database from './../../database';
+import Button from '../../components/Button';
+import { Car as ModelCar } from '../../database/model/Car';
 
 interface Props {}
 
 const Home = (props: Props) => {
-  const [cars, setCars] = useState<CarDTO[]>([]);
+  const [cars, setCars] = useState<ModelCar[]>([]);
   const [loading, setLoading] = useState(true);
 
   const netInfo = useNetInfo();
   const navigation = useNavigation<any>();
 
-  const handleCarDetails = (car: CarDTO) => {
+  const handleCarDetails = (car: any) => {
     navigation.navigate('CarDetails', {
       car,
+    });
+  };
+
+  const offlineSynchronize = async () => {
+    await synchronize({
+      database,
+      pullChanges: async ({ lastPulledAt }) => {
+        const res = await api.get(
+          `cars/sync/pull?lastPulledVersion=${lastPulledAt || 0}`
+        );
+        const { changes, latestVersion } = res.data;
+        console.log('### SINCRONIZACAO ###');
+        console.log(changes);
+        return { changes, timestamp: latestVersion };
+      },
+      pushChanges: async ({ changes }) => {
+        const user = changes.users;
+        await api.post('/users/sync', user);
+      },
     });
   };
 
@@ -30,13 +53,22 @@ const Home = (props: Props) => {
 
     const fetchCars = async () => {
       try {
-        const res = await api.get('/cars');
-        isMounted && setCars(res.data);
+        // const res = await api.get('/cars');
+        // const cars = res.data;
+
+        const carCollection = database.get<ModelCar>('cars');
+        const cars = await carCollection.query().fetch();
+
+        if (isMounted) {
+          setCars(cars);
+        }
       } catch (error) {
         Alert.alert('Erro ao carregar os carros');
         console.error(error);
       } finally {
-        isMounted && setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -48,10 +80,8 @@ const Home = (props: Props) => {
   }, []);
 
   useEffect(() => {
-    if (netInfo.isConnected) {
-      Alert.alert('Online');
-    } else {
-      Alert.alert('Offline');
+    if (netInfo.isConnected === true) {
+      offlineSynchronize();
     }
   }, [netInfo.isConnected]);
 
@@ -68,6 +98,8 @@ const Home = (props: Props) => {
           {!loading && <TotalCars>Total de {cars.length} carros</TotalCars>}
         </HeaderContent>
       </Header>
+
+      {/* <Button title="Sincronizar" onPress={offlineSynchronize} /> */}
 
       {loading ? (
         <LoadAnimated />

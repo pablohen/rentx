@@ -23,4 +23,4 @@ class User extends Model {
   token!: string;
 }
 
-export default User;
+export { User };

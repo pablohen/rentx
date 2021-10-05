@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import database from '../database';
 import api from './../services/api';
-import * as ModelUser from '../database/model/User';
+import { User as ModelUser } from '../database/model/User';
 
 interface User {
   id: string;
@@ -29,6 +29,7 @@ interface AuthContextData {
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signOut: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
+  loading: boolean;
 }
 
 interface Props {
@@ -39,6 +40,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider = ({ children }: Props) => {
   const [data, setData] = useState<User>({} as User);
+  const [loading, setLoading] = useState(true);
 
   const signIn = async ({ email, password }: SignInCredentials) => {
     try {
@@ -50,7 +52,7 @@ const AuthProvider = ({ children }: Props) => {
 
       api.defaults.headers.authorizarion = `Bearer ${token}`;
 
-      const userCollection = database.get<any>('users');
+      const userCollection = database.get<ModelUser>('users');
 
       await database.write(async () => {
         await userCollection.create((newUser) => {
@@ -74,7 +76,7 @@ const AuthProvider = ({ children }: Props) => {
 
   const signOut = async () => {
     try {
-      const userCollection = database.get('users');
+      const userCollection = database.get<ModelUser>('users');
 
       await database.write(async () => {
         const userSelected = await userCollection.find(data.id);
@@ -89,7 +91,7 @@ const AuthProvider = ({ children }: Props) => {
 
   const updateUser = async (user: User) => {
     try {
-      const userCollection = database.get('users');
+      const userCollection = database.get<ModelUser>('users');
 
       await database.write(async () => {
         const userSelected = await userCollection.find(user.id);
@@ -108,7 +110,7 @@ const AuthProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const loadUserData = async () => {
-      const userCollection = database.get('users');
+      const userCollection = database.get<ModelUser>('users');
       const res = await userCollection.query().fetch();
 
       if (res.length > 0) {
@@ -116,6 +118,7 @@ const AuthProvider = ({ children }: Props) => {
 
         api.defaults.headers.authorizarion = `Bearer ${userData.token}`;
         setData(userData);
+        setLoading(false);
       }
     };
 
@@ -123,7 +126,9 @@ const AuthProvider = ({ children }: Props) => {
   });
 
   return (
-    <AuthContext.Provider value={{ user: data, signIn, signOut, updateUser }}>
+    <AuthContext.Provider
+      value={{ user: data, signIn, signOut, updateUser, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
