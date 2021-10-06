@@ -32,6 +32,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { ImageInfo } from 'expo-image-picker/build/ImagePicker.types';
 import Button from '../../components/Button';
 import * as yup from 'yup';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 interface Props {}
 
@@ -45,13 +46,21 @@ const Profile = (props: Props) => {
 
   const theme = useTheme();
   const navigation = useNavigation();
+  const netInfo = useNetInfo();
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleOptionChange = (optionSelected: 'dataEdit' | 'passwordEdit') => {
-    setOption(optionSelected);
+    if (netInfo.isConnected === false && optionSelected === 'passwordEdit') {
+      Alert.alert(
+        'Voce está offline',
+        'Para mudar a senha, conecte-se a Internet.'
+      );
+    } else {
+      setOption(optionSelected);
+    }
   };
 
   const handleAvatarSelect = async () => {

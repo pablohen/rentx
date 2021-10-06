@@ -55,7 +55,6 @@ const Home = (props: Props) => {
       try {
         // const res = await api.get('/cars');
         // const cars = res.data;
-
         const carCollection = database.get<ModelCar>('cars');
         const cars = await carCollection.query().fetch();
 
