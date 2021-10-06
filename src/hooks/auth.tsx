@@ -50,7 +50,7 @@ const AuthProvider = ({ children }: Props) => {
       });
       const { token, user } = res.data;
 
-      api.defaults.headers.authorizarion = `Bearer ${token}`;
+      api.defaults.headers.authorization = `Bearer ${token}`;
 
       const userCollection = database.get<ModelUser>('users');
 
@@ -116,7 +116,7 @@ const AuthProvider = ({ children }: Props) => {
       if (res.length > 0) {
         const userData = res[0]._raw as unknown as User;
 
-        api.defaults.headers.authorizarion = `Bearer ${userData.token}`;
+        api.defaults.headers.authorization = `Bearer ${userData.token}`;
         setData(userData);
         setLoading(false);
       }
